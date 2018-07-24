@@ -1,0 +1,13 @@
+::
+
+  <<sig:sample_sig>>
+
+  Normal Size
+
+  <<sig:sample_sig:1.2>>
+
+  Small
+
+  <<sig:sample_sig:6.5>>
+
+  Large

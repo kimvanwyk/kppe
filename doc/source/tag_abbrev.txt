@@ -1,0 +1,5 @@
+::
+
+   <<name:JB>> and <<n:MRe>> liked to discuss <<abbrev:RHCP>> and \
+   <<a:OMD>> on online forums, but found typing out the names \
+   of the bands to be very tedious. 

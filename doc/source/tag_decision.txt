@@ -1,0 +1,4 @@
+::
+
+  The weather was discussed at length. To ward off tedium, <<decision:Bob proposed that the weather should only be 
+  mentioned if an actual tornado is approaching. Unanimously approved.>>

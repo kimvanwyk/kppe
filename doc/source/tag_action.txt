@@ -1,0 +1,17 @@
+::
+
+  # Bridge Crew
+  
+  ## Explore Mysterious Planet
+  Visit the surface of the planet.
+  <<action:James T Kirk:Spock:Red-shirted Victim>>
+  
+  ## Assert Medical Profession
+  Loudly Exclaim "Damnit Jim, I'm a doctor!"
+  <<action:Bones McCoy>>
+  
+  # Cannon Fodder Department
+  
+  ## Die Horribly
+  Do not return alive from the planet.
+  <<action:Red-shirted Victim>>
