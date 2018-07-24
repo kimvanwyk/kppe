@@ -79,6 +79,7 @@ try:
     LOCAL_PATH = os.path.split(inspect.getframeinfo(frame)[0])[0]
 finally:
     del frame
+TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'templates')
 
 def latex_label(s):
     ''' Return a version of input string suitable for use as a Latex label
@@ -323,7 +324,7 @@ def get_template(template):
         raise BadConfigFileException
     if template not in Config.templates:
         raise BadTemplateSelectionException
-    t = os.path.join(LOCAL_PATH, Config.templates[template])
+    t = os.path.join(TEMPLATE_PATH, Config.templates[template])
     if not os.path.exists(t):
         raise MissingTemplateFileException
     return t
