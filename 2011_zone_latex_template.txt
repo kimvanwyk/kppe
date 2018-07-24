@@ -1,0 +1,77 @@
+\documentclass[$fontsize$pt, a4paper, notitlepage]{article}
+\usepackage[vscale=0.9, centering, hmargin=1.5cm, top=1.5cm, bottom=1.5cm,
+includefoot, footskip=1cm, ignorehead]{geometry}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% Hyper refs
+\usepackage[breaklinks=true,unicode=true,pdfborder={0 0 0}]{hyperref}
+\usepackage{breakurl}
+\hypersetup{colorlinks={true}, urlcolor=blue, linkcolor=black}
+\urlstyle{same}
+
+% Reduce spacing after headings
+\usepackage[compact]{titlesec}
+\titlespacing{\section}{0pt}{*0}{*0}
+\titlespacing{\subsection}{0pt}{*0}{*0}
+\titlespacing{\subsubsection}{0pt}{*0}{*0}
+
+\usepackage{savetrees}
+
+\usepackage{sectsty}
+\usepackage{color}
+\sectionfont{\color{blue}}
+\usepackage[normalem]{ulem}
+\subsectionfont{\color{blue}\uline}
+
+$if(tables)$
+\usepackage{array}
+% This is needed because raggedright in table elements redefines \\:
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\let\PBS=\PreserveBackslash
+$endif$
+
+\usepackage{graphicx}
+% Header for first page
+\usepackage{fancyhdr}
+
+\fancyhf{}
+\fancyfoot[C]{Zone Chairperson Denise Bolland / Zone Secretary Vicki van Wyk}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\setlength{\parindent}{0pt}
+\pagestyle{fancy}
+
+\usepackage[parfill]{parskip}
+
+\begin{document}
+
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\setlength{\parindent}{-1cm}
+\begin{tabularx}{\textwidth + 2cm}{l C r}
+  \multirow{6}{3.6cm}{\includegraphics[width=3.5cm]{$path$lionsemblemnewsmall.png}}
+  & \Large{\emph{The International Association of Lions Clubs}} & \multirow{6}{3.6cm}{\includegraphics[width=3.5cm]{$path$20112012_int_presidents_logo_small.png}} \\
+&  \LARGE{\textbf{ZONE 5}} & \\
+&  \Large{Denise Bolland} & \\
+&  \Large{Zone Chairperson 2011-2012} & \\
+&  \Large{District 410C - South Africa} & \\
+&  147 Belvedere Road, Red Hill, 4051 &  \\
+&  Mobile: 083 650 7007   Email: \href{mailto:awa@icon.co.za}{awa@icon.co.za} &  \\
+&  Home club: North Durban &  
+\end{tabularx}
+\setlength{\parindent}{0pt}
+
+$body$
+
+\end{document}
+ 

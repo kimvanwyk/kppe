@@ -1,0 +1,21 @@
+% Reference Word doc
+%
+% 10 August 2016
+
+# Num 1
+
+## Num 2
+
+### Num 3
+
+#### Num 4
+
+* Lvl 1
+
+    * Lvl 2
+
+        * Lvl 3
+ 
+            * Lvl 4
+
+Body text

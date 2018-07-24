@@ -1,0 +1,5 @@
+apt install texlive xzdec pandoc
+tlmgr init-usertree
+tlmgr option repository ftp://tug.org/historic/systems/texlive/2017/tlnet-final
+savetrees titlesec ucs multirow breakurl ulem
+

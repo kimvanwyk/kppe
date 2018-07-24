@@ -1,0 +1,79 @@
+% \documentclass[$if(fontsize)$$fontsize$pt,$endif$a4paper]{article}
+\documentclass[12pt, a4paper]{article}
+\usepackage[hmargin=1.5cm,vmargin=2cm]{geometry}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+
+\usepackage{savetrees}
+\usepackage[usenames,dvipsnames]{color}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% Hyper refs
+\usepackage[breaklinks=true,unicode=true,pdfborder={0 0 0}]{hyperref}
+\usepackage{breakurl}
+\hypersetup{colorlinks={true}, urlcolor=blue, linkcolor=black}
+\urlstyle{same}
+
+\usepackage[compact]{titlesec}
+\usepackage[normalem]{ulem}
+\titleformat*{\section}{\Large\color{blue}}
+\titleformat*{\subsection}{\large\color{blue}}
+\titleformat*{\subsubsection}{\color{blue}}
+\titlespacing{\section}{0pt}{*0}{*0}
+\titlespacing{\subsection}{0pt}{*0}{*0}
+\titlespacing{\subsubsection}{0pt}{*0}{*0}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+$if(tables)$
+\usepackage{array}
+% This is needed because raggedright in table elements redefines \\:
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\let\PBS=\PreserveBackslash
+$endif$
+
+\usepackage{graphicx}
+% Header for first page
+\usepackage{fancyhdr}
+\fancyhead{}
+\fancyfoot[R]{Page \thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\setlength{\parindent}{0pt}
+\pagestyle{fancy}
+
+% suppress hyphens as per http://www.matthewstrawbridge.com/content/2014/creating-pdfs-justified-text-no-hyphens-pandoc/
+\exhyphenpenalty=10000 \hyphenpenalty=10000
+
+\usepackage[parfill]{parskip}
+\begin{document}
+
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\setlength{\parindent}{-1cm}
+\begin{tabularx}{\textwidth + 2cm}{l C r}
+  \multirow{7}{3.6cm}{\parbox[c]{1em}{\includegraphics[width=3.5cm]{$path$lci_100_logo.png}}}
+  & \large{\textbf{Lions Clubs International}} & \multirow{7}{3.6cm}{\parbox[c]{1em}{\includegraphics[width=3.5cm]{$path$2016_cc_denis_logo.png}}} \\
+&  \large{\textbf{MULTIPLE DISTRICT 410 (Southern Africa)}} &\\
+&  \large{\textbf{Council Chairman 2016/2017}} & \\
+&  \large{\textbf{Denis Meyer}} & \\
+&  PO Box 44, Shelly Beach 4265 South Africa &  \\
+&  Tel: (039) 315 6610 F: (086) 463 7234 Cell: 083 301 2883  &  \\
+&  \href{mailto:denis@sheppielions.co.za}{denis@sheppielions.co.za} & \\
+\hline 
+\end{tabularx}
+\setlength{\parindent}{0pt}
+
+$body$
+
+\end{document}
+ 

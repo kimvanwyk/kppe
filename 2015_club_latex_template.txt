@@ -1,0 +1,78 @@
+\documentclass[$fontsize$pt, a4paper, notitlepage]{article}
+\usepackage[vscale=0.9, centering, hmargin=1.5cm, top=1.5cm, bottom=1.5cm,
+includefoot, footskip=1cm, ignorehead]{geometry}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+
+\usepackage{savetrees}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% Hyper refs
+\usepackage[breaklinks=true,unicode=true,pdfborder={0 0 0}]{hyperref}
+\usepackage{breakurl}
+\hypersetup{colorlinks={true}, urlcolor=blue, linkcolor=black}
+\urlstyle{same}
+
+\usepackage[compact]{titlesec}
+\usepackage[normalem]{ulem}
+\titleformat*{\section}{\Large\color{blue}}
+\titleformat*{\subsection}{\large\color{blue}}
+\titleformat*{\subsubsection}{\large\color{blue}}
+\titlespacing{\section}{0pt}{*0}{*0}
+\titlespacing{\subsection}{0pt}{*0}{*0}
+\titlespacing{\subsubsection}{0pt}{*0}{*0}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+$if(tables)$
+\usepackage{array}
+% This is needed because raggedright in table elements redefines \\:
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\let\PBS=\PreserveBackslash
+$endif$
+
+\usepackage{graphicx}
+% Header for first page
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+\fancyhf{}
+\fancyfoot[C]{%
+  \textbf{President}: Vicki van Wyk \space \textbf{Secretary}:  Avril Hobbs \space \textbf{Treasurer}: Sandra Monaghan\\
+  \textbf{NPO No.} 307-705}
+\fancyfoot[R]{Page \thepage/\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\setlength{\parindent}{0pt}
+\pagestyle{fancy}
+
+\usepackage[parfill]{parskip}
+
+\begin{document}
+
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\setlength{\parindent}{-1cm}
+\begin{tabularx}{\textwidth + 2cm}{l C r}
+  \multirow{6}{3.6cm}{\includegraphics[width=3.5cm]{$path$lionsemblemnewsmall.png}} & \large{Lions Clubs International} & \multirow{6}{3.6cm}{\includegraphics[width=3.5cm]{$path$20152016_int_presidents_logo_small.png}} \\
+&  \LARGE{\textbf{NORTH DURBAN LIONS CLUB}} &\\
+&  \large{A Lions club of District 410C, Southern Africa} & \\
+&  \Large{PO Box 201038 Durban North 4016} & \\
+&  \Large{\href{http://www.northdurbanlions.org.za}{\burl{www.northdurbanlions.org.za}}} &  \\
+& & 
+\end{tabularx}
+\setlength{\parindent}{0pt}
+
+$body$
+
+\end{document}
+ 

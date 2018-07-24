@@ -1,0 +1,91 @@
+% \documentclass[$if(fontsize)$$fontsize$pt,$endif$a4paper]{article}
+\documentclass[12pt, a4paper]{article}
+\usepackage[hmargin=1.5cm,vmargin=2cm]{geometry}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+
+\usepackage{savetrees}
+\usepackage[usenames,dvipsnames]{color}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% Hyper refs
+\usepackage[breaklinks=true,unicode=true,pdfborder={0 0 0}]{hyperref}
+\usepackage{breakurl}
+\hypersetup{colorlinks={true}, urlcolor=blue, linkcolor=black}
+\urlstyle{same}
+
+\usepackage[compact]{titlesec}
+\usepackage[normalem]{ulem}
+\titleformat*{\section}{\Large\color{blue}}
+\titleformat*{\subsection}{\large\color{blue}}
+\titleformat*{\subsubsection}{\color{blue}}
+\titlespacing{\section}{0pt}{*0}{*0}
+\titlespacing{\subsection}{0pt}{*0}{*0}
+\titlespacing{\subsubsection}{0pt}{*0}{*0}
+
+$if(tables)$
+\usepackage{array}
+% This is needed because raggedright in table elements redefines \\:
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\let\PBS=\PreserveBackslash
+$endif$
+
+\usepackage{graphicx}
+% Header for first page
+\usepackage{fancyhdr}
+\fancyhf{}
+\fancyfoot[C]{%
+\resizebox{560pt}{!}{
+\begin{tabular*}{560pt}{ p{140pt} c c r }
+ & & & \\
+  & \multicolumn{2}{c}{\Large{\textbf{Home Club Ballito}}} & \multirow{5}{140pt}{\parbox[t]{1em}{\includegraphics[width=2.7cm]{$path$20122013_int_presidents_logo_small.png}}} \\
+\multicolumn{3}{c}{\multirow{2}{420pt}{\parbox[t]{1em}{\includegraphics[width=420pt]{$path$2012_dg_adrian_spear.jpg}}}}
+ & \\
+ & & & \\
+ &  District Cabinet Secretary & District Cabinet Treasurer & \\
+ &  Vicki van Wyk & Margaret Haus & \\
+ & & & \\
+ & & &
+\end{tabular*}
+}
+}
+\renewcommand{\headrulewidth}{0pt}
+\textheight=700pt
+\renewcommand{\footrulewidth}{0pt}
+
+\setlength{\parindent}{0pt}
+\pagestyle{fancy}
+
+\usepackage[parfill]{parskip}
+\begin{document}
+
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\setlength{\parindent}{-1cm}
+\resizebox{\textwidth + 2cm}{!}{
+\begin{tabularx}{\textwidth + 2cm}{l C r}
+  \multirow{8}{3.6cm}{\parbox[t]{1em}{\includegraphics[width=3.5cm]{$path$2012_dg_adrian_logo.jpg}}}
+  &  &
+  \multirow{8}{3.6cm}{\parbox[t]{1em}{\includegraphics[width=3.5cm]{$path$lionsemblemnewsmall.png}}}
+  \\
+& \Large{\emph{The International Association of Lions Clubs}} &\\
+&  \Huge{\textbf{Adrian P Barnes}} &\\
+&  \Large{District 410C Governor 2012-2013} & \\
+&  Tel (w): 032 946 8000 \space \space Cell: 083 628 4283 &  \\
+&  PO Box 63, Pavilion, 3611 \space \space  Email: \href{mailto:adrian.barnes007@gmail.com}{adrian.barnes007@gmail.com} &  \\
+& & 
+\end{tabularx}
+}
+\setlength{\parindent}{0pt}
+
+$body$
+
+\end{document}
+ 
