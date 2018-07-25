@@ -269,15 +269,13 @@ def build_pdf(text, template, name, toc=False):
     '''
     # supply a path to the template image files, which will be the path the template is in
     path = os.path.split(os.path.abspath(template))[0].replace('\\', '/') + '/'
-    if 1:
-        args = ['pandoc', '-s', '-V', 'fontsize:12', '-V', 'path:%s' % path, '--template=%s' % template, '-o', name]
-    if 0:
-        name = name[:-3] + 'docx'
-        template = os.path.join(LOCAL_PATH, '2016_council_word_template.docx')
-        args = ['pandoc', '-s', '-V', 'fontsize:12', '-V', 'path:%s' % path, '-o', name]
+    if 'word' in template:
+        template_arg = '--reference-doc=%s' % template
+    else:
+        template_arg = '--template=%s' % template
+    args = ['pandoc', '-s', '-V', 'fontsize:12', '-V', 'path:%s' % path, template_arg, '-o', name]
     if toc:
         args.append('--toc')
-    print args
     p = Popen(args, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
     ret = p.communicate(input=text)[0]
     return (ret, p.returncode)
