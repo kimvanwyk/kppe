@@ -72,8 +72,6 @@ class ConfigManager(object):
             raise BadConfigFileException()
         # read templates
         self.templates= dict(config.items("Templates"))
-        # read name mappings
-        self.names = dict(config.items("Names"))
 
 Config = None
 
@@ -209,7 +207,6 @@ class TagReplace(object):
                 if len(items) > 2:
                     # length modifier given. Otherwise use default of 20
                     tot_len = int(items[2])
-                print tot_len, '"%s"' % s, (tot_len - len(s))/2
                 if len(s) < tot_len:
                     l = (tot_len - len(s))/2
                     s = '%s%s%s' % ('\quad ' * l, s, '\quad ' * l)
@@ -284,7 +281,6 @@ def build_pdf(text, template, name, toc=False):
     args = ['pandoc', '-s', '-V', 'fontsize:12', '-V', 'path:%s' % path, template_arg, '-o', '%s.%s' % (name, ext)]
     if toc:
         args.append('--toc')
-    print ' '.join(args)
     p = Popen(args, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
     ret = p.communicate(input=text)[0]
     return (ret, p.returncode)
@@ -402,7 +398,6 @@ if __name__ == '__main__':
             f.write(text)
             f.close()
         ret, retcode = build_pdf(text, template, os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
-        # ret, retcode = build_pdf(text, template, '%s.docx' % os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
         if args.verbose:
             print 'Pandoc output:'
             print
