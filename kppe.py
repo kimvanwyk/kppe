@@ -29,7 +29,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from collections import defaultdict
 from ConfigParser import SafeConfigParser
+from glob import glob
 import inspect
+import json
 import os
 import os.path
 import re
@@ -47,6 +49,8 @@ class BadConfigFileException(KppeExpection):
 class BadTemplateSelectionException(KppeExpection):
     pass
 class MissingTemplateFileException(KppeExpection):
+    pass
+class BadAbbreviationDirException(KppeExpection):
     pass
 
 class ConfigManager(object):
@@ -80,6 +84,7 @@ try:
 finally:
     del frame
 DEFAULT_TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'templates')
+DEFAULT_ABBREV_PATH = os.path.join(LOCAL_PATH, 'abbreviations')
 
 def latex_label(s):
     ''' Return a version of input string suitable for use as a Latex label
@@ -122,7 +127,7 @@ class TagReplace(object):
     sig_size = 3
     sig_path = None
 
-    def __init__(self, lines, names={}):
+    def __init__(self, lines, abbrevs={}):
         self.lines = lines
         # track occurences of reference tags
         self.ref_count = defaultdict(int)
@@ -130,7 +135,7 @@ class TagReplace(object):
         # Set the path to signature files to be the path of kppe.py, if not otherwise set
         if not self.__class__.sig_path:
             self.__class__.sig_path = LOCAL_PATH
-        self.names = names
+        self.abbrevs = abbrevs
   
     def process(self):
         ''' Loop over each line, replacing all tags as they are encountered
@@ -211,9 +216,9 @@ class TagReplace(object):
                 return  r"\textcolor{Gray}{\underline{%s}}" % s
 
             elif items[0] in ('a', 'n', 'abbrev', 'name'):
-                # Replace with a name, if there is a suitable entry in self.names. If there isn't an entry
+                # Replace with a name, if there is a suitable entry in self.abbrevs. If there isn't an entry
                 # don't replace the tag
-                n = self.names.get(items[1], None)
+                n = self.abbrevs.get(items[1], None)
                 if n:
                     return n
                 return ''
@@ -277,9 +282,9 @@ def build_pdf(text, template, name, toc=False):
         template_arg = '--template=%s' % template
         ext = 'pdf'
     args = ['pandoc', '-s', '-V', 'fontsize:12', '-V', 'path:%s' % path, template_arg, '-o', '%s.%s' % (name, ext)]
-    print args
     if toc:
         args.append('--toc')
+    print ' '.join(args)
     p = Popen(args, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
     ret = p.communicate(input=text)[0]
     return (ret, p.returncode)
@@ -349,7 +354,8 @@ if __name__ == '__main__':
 
     # define error codes
     ERROR_CODES = Enum("ErrorCodes", [("NO_ERROR",0), ("MISSING_CONFIG_FILE",1), ("BAD_CONFIG_FILE",2), ("BAD_REF_TAGS_FILE",3), 
-                                      ("BAD_TEMPLATE_SELECTION",4), ("MISSING_TEMPLATE_FILE",5), ("PANDOC_ERROR",6), ("UNKNOWN_ERROR",7)])
+                                      ("BAD_TEMPLATE_SELECTION",4), ("MISSING_TEMPLATE_FILE",5), ("BAD_ABBREVIATION_DIR",6),
+                                      ("PANDOC_ERROR",7), ("UNKNOWN_ERROR",8)])
 
     def list_templates(args):
         ''' Determine if the supplied config file is valid and list the 
@@ -378,8 +384,17 @@ if __name__ == '__main__':
             print e
             exit(ERROR_CODES.UNKNOWN_ERROR, args.verbose)            
 
+        # build a list of abbreviations, sending an empty dict if there aren't any
+        # Raise an error if an invalid file is supplied
+        if not os.path.exists(args.abbreviations_dir):
+            exit(ERROR_CODES.BAD_ABBREVIATION_DIR, args.verbose)
+        abbrevs = {}
+        for f in glob(os.path.join(args.abbreviations_dir, '*.json')):
+            with open(f, 'r') as fh:
+                abbrevs.update(json.load(fh))
+
         fh = open(args.file, 'r')
-        tag = TagReplace([l.strip('\n') for l in fh.readlines()], names=Config.names)
+        tag = TagReplace([l.strip('\n') for l in fh.readlines()], abbrevs=abbrevs)
         tag.process()
         text = tag.get_text()
         if args.write_source_file:
@@ -420,6 +435,8 @@ if __name__ == '__main__':
                         help='Set the full path to the config file to use. Defaults to "%(default)s"')
         p.add_argument('--templates_dir', default=DEFAULT_TEMPLATE_PATH, 
                         help='Set the full path to the templates directory. Defaults to "%(default)s"')
+        p.add_argument('--abbreviations_dir', default=DEFAULT_ABBREV_PATH, 
+                        help='Set the full path to the abbreviations directory. Defaults to "%(default)s"')
         p.add_argument('--quiet', '-q', action='store_false', dest="verbose",
                        help='Whether to suppress information and status during operation')
         p.add_argument('--version', action='version',
