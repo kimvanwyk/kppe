@@ -79,7 +79,7 @@ try:
     LOCAL_PATH = os.path.split(inspect.getframeinfo(frame)[0])[0]
 finally:
     del frame
-TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'templates')
+DEFAULT_TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'templates')
 
 def latex_label(s):
     ''' Return a version of input string suitable for use as a Latex label
@@ -319,12 +319,12 @@ def read_config(config_file=None, verbose=False):
         exit({MissingConfigFileException: ERROR_CODES.MISSING_CONFIG_FILE,
               BadConfigFileException: ERROR_CODES.BAD_CONFIG_FILE}[e.__class__], verbose)
 
-def get_template(template):
+def get_template(template, templates_dir):
     if not Config:
         raise BadConfigFileException
     if template not in Config.templates:
         raise BadTemplateSelectionException
-    t = os.path.join(TEMPLATE_PATH, Config.templates[template])
+    t = os.path.join(templates_dir, Config.templates[template])
     if not os.path.exists(t):
         raise MissingTemplateFileException
     return t
@@ -365,7 +365,7 @@ if __name__ == '__main__':
         specified template is a valid choice. Exit with an error code otherwise
         '''
         try:
-            template = get_template(args.template)
+            template = get_template(args.template, args.templates_dir)
         except MissingConfigFileException:
             exit(ERROR_CODES.MISSING_CONFIG_FILE, verbose)
         except BadTemplateSelectionException:
@@ -416,6 +416,8 @@ if __name__ == '__main__':
     for p in [parser_list_templates, parser_run_kppe]:
         p.add_argument('--config_file', action='store', default=os.path.join(LOCAL_PATH, "config.ini"), 
                         help='Set the full path to the config file to use. Defaults to "%(default)s"')
+        p.add_argument('--templates_dir', default=DEFAULT_TEMPLATE_PATH, 
+                        help='Set the full path to the templates directory. Defaults to "%(default)s"')
         p.add_argument('--quiet', '-q', action='store_false', dest="verbose",
                        help='Whether to suppress information and status during operation')
         p.add_argument('--version', action='version',
