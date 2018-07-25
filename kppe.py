@@ -270,10 +270,14 @@ def build_pdf(text, template, name, toc=False):
     # supply a path to the template image files, which will be the path the template is in
     path = os.path.split(os.path.abspath(template))[0].replace('\\', '/') + '/'
     if 'word' in template:
+        
         template_arg = '--reference-doc=%s' % template
+        ext = 'docx'
     else:
         template_arg = '--template=%s' % template
-    args = ['pandoc', '-s', '-V', 'fontsize:12', '-V', 'path:%s' % path, template_arg, '-o', name]
+        ext = 'pdf'
+    args = ['pandoc', '-s', '-V', 'fontsize:12', '-V', 'path:%s' % path, template_arg, '-o', '%s.%s' % (name, ext)]
+    print args
     if toc:
         args.append('--toc')
     p = Popen(args, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
@@ -382,7 +386,7 @@ if __name__ == '__main__':
             f = open('output.txt', 'w')
             f.write(text)
             f.close()
-        ret, retcode = build_pdf(text, template, '%s.pdf' % os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
+        ret, retcode = build_pdf(text, template, os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
         # ret, retcode = build_pdf(text, template, '%s.docx' % os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
         if args.verbose:
             print 'Pandoc output:'
