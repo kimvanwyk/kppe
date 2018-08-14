@@ -27,7 +27,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from ConfigParser import SafeConfigParser
 from glob import glob
 import inspect
@@ -59,6 +59,7 @@ try:
     LOCAL_PATH = os.path.split(inspect.getframeinfo(frame)[0])[0]
 finally:
     del frame
+DEFAULT_TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'default_templates')
 STANDARD_TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'templates')
 STANDARD_ABBREV_PATH = os.path.join(LOCAL_PATH, 'abbreviations')
 
@@ -283,6 +284,17 @@ def get_ref_tags(config_file=None, verbose=False):
         d[s] = (config.get(s,'title'),config.get(s, 'prefix'))
     return d
 
+def get_template_dict(template_dir):
+    l = []
+    for d in (DEFAULT_TEMPLATE_PATH, template_dir):
+        if not os.path.exists(d):
+            raise BadTemplateDirException
+        p = os.path.abspath(d)
+        for f in [f for f in os.listdir(d) if not os.path.isdir(os.path.join(p,f))]:
+            l.append((os.path.splitext(f)[0], os.path.join(p, f)))
+    l.sort()
+    return OrderedDict(l)
+
 def get_template(template_name, template_dir):
     d = os.path.abspath(template_dir)
     if not os.path.exists(d):
@@ -314,15 +326,12 @@ if __name__ == '__main__':
                                       ("PANDOC_ERROR",7), ("UNKNOWN_ERROR",8)])
 
     def list_templates(args):
-        ''' Determine if the supplied config file is valid and list the 
-        available templates if so. Exit with an error code otherwise.
-        '''
-        if not os.path.exists(args.templates_dir):
-            exit(ERROR_CODES.BAD_TEMPLATE_DIR, args.verbose)
-        templates = [f for f in os.listdir(args.templates_dir) if not os.path.isdir(os.path.join(args.templates_dir, f))]
-        templates.sort()
+        try:
+            templates = get_template_dict(args.templates_dir)
+        except BadTemplateDirException:
+            exit(ERROR_CODES.BAD_TEMPLATE_SELECTION, args.verbose)
         print 'Available Templates:'
-        print '\n'.join(['   %s' % t for t in templates])
+        print '\n'.join(['   %s' % t for t in templates.keys()])
         exit(ERROR_CODES.NO_ERROR, args.verbose)
 
     def run_kppe(args):
