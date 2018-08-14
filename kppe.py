@@ -60,7 +60,7 @@ try:
 finally:
     del frame
 STANDARD_TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'templates')
-DEFAULT_ABBREV_PATH = os.path.join(LOCAL_PATH, 'abbreviations')
+STANDARD_ABBREV_PATH = os.path.join(LOCAL_PATH, 'abbreviations')
 
 def latex_label(s):
     ''' Return a version of input string suitable for use as a Latex label
@@ -387,7 +387,7 @@ if __name__ == '__main__':
     for p in [parser_list_templates, parser_run_kppe]:
         p.add_argument('--templates_dir', default=STANDARD_TEMPLATE_PATH, 
                         help='Set the full path to the templates directory. Defaults to "%(default)s"')
-        p.add_argument('--abbreviations_dir', default=DEFAULT_ABBREV_PATH, 
+        p.add_argument('--abbreviations_dir', default=STANDARD_ABBREV_PATH, 
                         help='Set the full path to the abbreviations directory. Defaults to "%(default)s"')
         p.add_argument('--quiet', '-q', action='store_false', dest="verbose",
                        help='Whether to suppress information and status during operation')
