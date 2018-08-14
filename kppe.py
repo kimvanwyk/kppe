@@ -46,34 +46,12 @@ class MissingConfigFileException(KppeExpection):
     pass
 class BadConfigFileException(KppeExpection):
     pass
-class BadTemplateSelectionException(KppeExpection):
+class BadTemplateDirException(KppeExpection):
     pass
-class MissingTemplateFileException(KppeExpection):
+class BadTemplateFileException(KppeExpection):
     pass
 class BadAbbreviationDirException(KppeExpection):
     pass
-
-class ConfigManager(object):
-    ''' Hold config items as suitable types.
-    '''
-    def __init__(self, path, verbose=False):
-        ''' Determine if the supplied config file path is valid, storing
-        relevant items if so. Raise an exception otherwise
-        '''
-        # check that the specified config file can be opened
-        if not os.path.exists(path):
-            raise MissingConfigFileException
-
-        config = SafeConfigParser()
-        # override to ensure case is preserved
-        config.optionxform = str
-        config.read(path)
-        if not config.has_section("Templates"):
-            raise BadConfigFileException()
-        # read templates
-        self.templates= dict(config.items("Templates"))
-
-Config = None
 
 # determine the local path
 frame = inspect.currentframe()
@@ -272,7 +250,6 @@ def build_pdf(text, template, name, toc=False):
     # supply a path to the template image files, which will be the path the template is in
     path = os.path.split(os.path.abspath(template))[0].replace('\\', '/') + '/'
     if 'word' in template:
-        
         template_arg = '--reference-doc=%s' % template
         ext = 'docx'
     else:
@@ -306,31 +283,14 @@ def get_ref_tags(config_file=None, verbose=False):
         d[s] = (config.get(s,'title'),config.get(s, 'prefix'))
     return d
 
-def read_config(config_file=None, verbose=False):
-    ''' Determine if the supplied config_file path is valid
-    and create a global ConfigHandler object if so. Exit with an error code otherwise
-
-    'verbose' governs whether the exit function should print additional info
-    '''
-
-    if not config_file:
-        config_file = os.path.join(LOCAL_PATH, "config.ini")
-    try:
-        global Config
-        Config = ConfigManager(config_file)
-    except Exception as e:
-        exit({MissingConfigFileException: ERROR_CODES.MISSING_CONFIG_FILE,
-              BadConfigFileException: ERROR_CODES.BAD_CONFIG_FILE}[e.__class__], verbose)
-
-def get_template(template, templates_dir):
-    if not Config:
-        raise BadConfigFileException
-    if template not in Config.templates:
-        raise BadTemplateSelectionException
-    t = os.path.join(templates_dir, Config.templates[template])
-    if not os.path.exists(t):
-        raise MissingTemplateFileException
-    return t
+def get_template(template_name, template_dir):
+    d = os.path.abspath(template_dir)
+    if not os.path.exists(d):
+        raise BadTemplateDirException
+    p = os.path.join(d, template_name)
+    if not os.path.exists(p):
+        raise BadTemplateFileException
+    return p
 
 def exit(code = None, verbose=False):
     ''' Exit, using optional supplied ERROR_CODES value if given.
@@ -350,18 +310,19 @@ if __name__ == '__main__':
 
     # define error codes
     ERROR_CODES = Enum("ErrorCodes", [("NO_ERROR",0), ("MISSING_CONFIG_FILE",1), ("BAD_CONFIG_FILE",2), ("BAD_REF_TAGS_FILE",3), 
-                                      ("BAD_TEMPLATE_SELECTION",4), ("MISSING_TEMPLATE_FILE",5), ("BAD_ABBREVIATION_DIR",6),
+                                      ("BAD_TEMPLATE_DIR",4), ("BAD_TEMPLATE_FILE",5), ("BAD_ABBREVIATION_DIR",6),
                                       ("PANDOC_ERROR",7), ("UNKNOWN_ERROR",8)])
 
     def list_templates(args):
         ''' Determine if the supplied config file is valid and list the 
         available templates if so. Exit with an error code otherwise.
         '''
-        w = max(len(k) for k in Config.templates.keys())
-        items = Config.templates.items()
-        items.sort()
+        if not os.path.exists(args.templates_dir):
+            exit(ERROR_CODES.BAD_TEMPLATE_DIR, args.verbose)
+        templates = [f for f in os.listdir(args.templates_dir) if not os.path.isdir(os.path.join(args.templates_dir, f))]
+        templates.sort()
         print 'Available Templates:'
-        print '\n'.join(['%*s, which will use file "%s"' % (w, k, v) for k,v in items])
+        print '\n'.join(['   %s' % t for t in templates])
         exit(ERROR_CODES.NO_ERROR, args.verbose)
 
     def run_kppe(args):
@@ -370,12 +331,10 @@ if __name__ == '__main__':
         '''
         try:
             template = get_template(args.template, args.templates_dir)
-        except MissingConfigFileException:
-            exit(ERROR_CODES.MISSING_CONFIG_FILE, verbose)
-        except BadTemplateSelectionException:
+        except BadTemplateDirException:
             exit(ERROR_CODES.BAD_TEMPLATE_SELECTION, args.verbose)
-        except MissingTemplateFileException:
-            exit(ERROR_CODES.MISSING_TEMPLATE_FILE, args.verbose)
+        except BadTemplateFileException:
+            exit(ERROR_CODES.BAD_TEMPLATE_FILE, args.verbose)
         except Exception as e:
             print e
             exit(ERROR_CODES.UNKNOWN_ERROR, args.verbose)            
@@ -418,7 +377,7 @@ if __name__ == '__main__':
                                  help='Also generate a table of contents')
     parser_run_kppe.set_defaults(func=run_kppe)
 
-    parser_list_templates = subparsers.add_parser('templates', help='Print a list of templates from the config file')
+    parser_list_templates = subparsers.add_parser('templates', help='Print a list of templates from the templates dir')
     parser_list_templates.set_defaults(func=list_templates)
 
     # a slight hack to get the same global options into each subparser, as they do not seem to inherit
@@ -426,8 +385,6 @@ if __name__ == '__main__':
     # A stackoverflow question (http://stackoverflow.com/questions/7066826/in-python-how-to-get-subparsers-to-read-in-parent-parsers-argument)
     # suggested giving a "parent={parser]" argument to the subparser call, but that causes a different argparse error
     for p in [parser_list_templates, parser_run_kppe]:
-        p.add_argument('--config_file', action='store', default=os.path.join(LOCAL_PATH, "config.ini"), 
-                        help='Set the full path to the config file to use. Defaults to "%(default)s"')
         p.add_argument('--templates_dir', default=DEFAULT_TEMPLATE_PATH, 
                         help='Set the full path to the templates directory. Defaults to "%(default)s"')
         p.add_argument('--abbreviations_dir', default=DEFAULT_ABBREV_PATH, 
@@ -438,5 +395,4 @@ if __name__ == '__main__':
                        version = "%(prog)s " + VERSION)
 
     args = parser.parse_args()
-    read_config(args.config_file, args.verbose)
     args.func(args)
