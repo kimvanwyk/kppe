@@ -59,7 +59,7 @@ try:
     LOCAL_PATH = os.path.split(inspect.getframeinfo(frame)[0])[0]
 finally:
     del frame
-DEFAULT_TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'templates')
+STANDARD_TEMPLATE_PATH = os.path.join(LOCAL_PATH, 'templates')
 DEFAULT_ABBREV_PATH = os.path.join(LOCAL_PATH, 'abbreviations')
 
 def latex_label(s):
@@ -385,7 +385,7 @@ if __name__ == '__main__':
     # A stackoverflow question (http://stackoverflow.com/questions/7066826/in-python-how-to-get-subparsers-to-read-in-parent-parsers-argument)
     # suggested giving a "parent={parser]" argument to the subparser call, but that causes a different argparse error
     for p in [parser_list_templates, parser_run_kppe]:
-        p.add_argument('--templates_dir', default=DEFAULT_TEMPLATE_PATH, 
+        p.add_argument('--templates_dir', default=STANDARD_TEMPLATE_PATH, 
                         help='Set the full path to the templates directory. Defaults to "%(default)s"')
         p.add_argument('--abbreviations_dir', default=DEFAULT_ABBREV_PATH, 
                         help='Set the full path to the abbreviations directory. Defaults to "%(default)s"')
