@@ -295,14 +295,11 @@ def get_template_dict(template_dir):
     l.sort()
     return OrderedDict(l)
 
-def get_template(template_name, template_dir):
-    d = os.path.abspath(template_dir)
-    if not os.path.exists(d):
-        raise BadTemplateDirException
-    p = os.path.join(d, template_name)
-    if not os.path.exists(p):
+def get_template(template_name, templates_dir):
+    templates = get_template_dict(templates_dir)
+    if template_name not in templates:
         raise BadTemplateFileException
-    return p
+    return templates[template_name]
 
 def exit(code = None, verbose=False):
     ''' Exit, using optional supplied ERROR_CODES value if given.
