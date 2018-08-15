@@ -310,7 +310,7 @@ if __name__ == '__main__':
         try:
             template = get_template(args.template, args.templates_dir)
         except BadTemplateDirException:
-            exit(ERROR_CODES.BAD_TEMPLATE_SELECTION, args.verbose)
+            exit(ERROR_CODES.BAD_TEMPLATE_DIR, args.verbose)
         except BadTemplateFileException:
             exit(ERROR_CODES.BAD_TEMPLATE_FILE, args.verbose)
         except Exception as e:
@@ -359,13 +359,13 @@ if __name__ == '__main__':
     parser_run_kppe = subparsers.add_parser('build', help='Build a PDF from the supplied file')
     parser_run_kppe.add_argument('template', help='Select a template to use')
     parser_run_kppe.add_argument('file', help='The pandoc file to process')
-    parser_run_kppe.add_argument('--write_source_file', action='store_true', 
+    parser_run_kppe.add_argument('--write-source-file', action='store_true', 
                                  help='Whether to save the generated source file. If set, the file is saved to output.txt')
     parser_run_kppe.add_argument('--toc', action='store_true',
                                  help='Also generate a table of contents')
-    parser_run_kppe.add_argument('--abbreviations_dir', default=STANDARD_ABBREV_PATH, 
+    parser_run_kppe.add_argument('--abbreviations-dir', default=STANDARD_ABBREV_PATH, 
                                  help='Set the full path to the abbreviations directory. Defaults to "%(default)s"')
-    parser_run_kppe.add_argument('--ref_tags_file', default=None, 
+    parser_run_kppe.add_argument('--ref-tags-file', default=None, 
                                  help='Set the full path to a file of reference tags. If not set, no reference tags are used')
     parser_run_kppe.set_defaults(func=run_kppe)
 
@@ -377,7 +377,7 @@ if __name__ == '__main__':
     # A stackoverflow question (http://stackoverflow.com/questions/7066826/in-python-how-to-get-subparsers-to-read-in-parent-parsers-argument)
     # suggested giving a "parent={parser]" argument to the subparser call, but that causes a different argparse error
     for p in [parser_list_templates, parser_run_kppe]:
-        p.add_argument('--templates_dir', default=STANDARD_TEMPLATE_PATH, 
+        p.add_argument('--templates-dir', default=STANDARD_TEMPLATE_PATH, 
                         help='Set the full path to the templates directory. Defaults to "%(default)s"')
         p.add_argument('--quiet', '-q', action='store_false', dest="verbose",
                        help='Whether to suppress information and status during operation')
