@@ -42,9 +42,7 @@ from version import VERSION
 # Exceptions
 class KppeExpection(Exception):
     pass
-class MissingConfigFileException(KppeExpection):
-    pass
-class BadConfigFileException(KppeExpection):
+class BadRefTagsFileException(KppeExpection):
     pass
 class BadTemplateDirException(KppeExpection):
     pass
@@ -81,30 +79,10 @@ class TagReplace(object):
     contents are seperated with ":"
     '''
 
-    # map reference tag names to (heading title, prefix). None if no prefix
-    ref_tags = {
-        'youth':('Youth', None),
-        'cakes':('Christmas Cakes', None),
-        'sight_diabetes_blood':('Sight, Diabetes and Blood Drives', None),
-        'hearing':('Hearing', None),
-        'it':('Information Technology', "MMR's and Activity Reports completed online. Club website kept up-to-date with all club events."),
-        'lcif':('Lions Clubs International Foundation', None),
-        'lh':('Louis Halse Trust', None),
-        'food':('Food Security', None),
-        'env':('Environment', None),
-        'lioness':('Lionesses', None),
-        'marketing':('Marketing of Lions', None),
-        'const':('Resolutions, Constitution & By Laws and Protocol', None),
-        'ye':('Youth Exchange', None),
-        'gmt':('Global Membership Team', None),
-        'glt':('Global Leadership Team', None),
-        'disabled':('Physically and Intellectually Disabled', None)
-        }
-
     sig_size = 3
     sig_path = None
 
-    def __init__(self, lines, abbrevs={}):
+    def __init__(self, lines, abbrevs={}, ref_tags={}):
         self.lines = lines
         # track occurences of reference tags
         self.ref_count = defaultdict(int)
@@ -113,6 +91,7 @@ class TagReplace(object):
         if not self.__class__.sig_path:
             self.__class__.sig_path = LOCAL_PATH
         self.abbrevs = abbrevs
+        self.ref_tags = ref_tags
   
     def process(self):
         ''' Loop over each line, replacing all tags as they are encountered
@@ -263,25 +242,19 @@ def build_pdf(text, template, name, toc=False):
     ret = p.communicate(input=text)[0]
     return (ret, p.returncode)
 
-def get_ref_tags(config_file=None, verbose=False):
-    ''' Determine if the supplied config_file path is valid
-    Exit with an error code otherwise
-
-    'verbose' governs whether the exit function should print additional info
+def get_ref_tags(filename):
+    ''' Parse the supplied file of reference tags
     '''
-    if not config_file:
-        config_file = os.path.join(LOCAL_PATH, "reference_tags.ini")
-    # check that the specified config file can be opened
-    if not os.path.exists(config_file):
-        raise MissingConfigFileException
+    if not os.path.exists(filename):
+        raise BadRefTagsFileException
 
-    config = SafeConfigParser(defaults={'prefix':None})
-    config.read(config_file)
+    ref_tags = SafeConfigParser(defaults={'prefix':None})
+    ref_tags.read(filename)
     d = {}
-    for s in config.sections():
-        if 'title' not in config.options(s):
-            exit(ERROR_CODES.BAD_REF_TAGS_FILE, verbose)
-        d[s] = (config.get(s,'title'),config.get(s, 'prefix'))
+    for s in ref_tags.sections():
+        if 'title' not in ref_tags.options(s):
+            raise BadRefTagsFileException
+        d[s] = (ref_tags.get(s,'title'),ref_tags.get(s, 'prefix'))
     return d
 
 def get_template_dict(template_dir):
@@ -318,7 +291,7 @@ if __name__ == '__main__':
     import argparse
 
     # define error codes
-    ERROR_CODES = Enum("ErrorCodes", [("NO_ERROR",0), ("MISSING_CONFIG_FILE",1), ("BAD_CONFIG_FILE",2), ("BAD_REF_TAGS_FILE",3), 
+    ERROR_CODES = Enum("ErrorCodes", [("NO_ERROR",0), ("BAD_REF_TAGS_FILE",3), 
                                       ("BAD_TEMPLATE_DIR",4), ("BAD_TEMPLATE_FILE",5), ("BAD_ABBREVIATION_DIR",6),
                                       ("PANDOC_ERROR",7), ("UNKNOWN_ERROR",8)])
 
@@ -332,8 +305,7 @@ if __name__ == '__main__':
         exit(ERROR_CODES.NO_ERROR, args.verbose)
 
     def run_kppe(args):
-        ''' Build a PDF, if the supplied config file is valid and the
-        specified template is a valid choice. Exit with an error code otherwise
+        ''' Build a PDF, if supplied options are valid. Exit with an error code otherwise
         '''
         try:
             template = get_template(args.template, args.templates_dir)
@@ -342,7 +314,6 @@ if __name__ == '__main__':
         except BadTemplateFileException:
             exit(ERROR_CODES.BAD_TEMPLATE_FILE, args.verbose)
         except Exception as e:
-            print e
             exit(ERROR_CODES.UNKNOWN_ERROR, args.verbose)            
 
         # build a list of abbreviations, sending an empty dict if there aren't any
@@ -354,8 +325,19 @@ if __name__ == '__main__':
             with open(f, 'r') as fh:
                 abbrevs.update(json.load(fh))
 
+        # produce a ref tags file, if specified
+        if args.ref_tags_file:
+            try:
+                ref_tags = get_ref_tags(args.ref_tags_file)
+            except BadRefTagsFileException:
+                exit(ERROR_CODES.BAD_REF_TAGS_FILE, args.verbose)
+            except Exception as e:
+                exit(ERROR_CODES.UNKNOWN_ERROR, args.verbose)
+        else:
+            ref_tags = {}
+
         fh = open(args.file, 'r')
-        tag = TagReplace([l.strip('\n') for l in fh.readlines()], abbrevs=abbrevs)
+        tag = TagReplace([l.strip('\n') for l in fh.readlines()], abbrevs=abbrevs, ref_tags=ref_tags)
         tag.process()
         text = tag.get_text()
         if args.write_source_file:
@@ -381,6 +363,10 @@ if __name__ == '__main__':
                                  help='Whether to save the generated source file. If set, the file is saved to output.txt')
     parser_run_kppe.add_argument('--toc', action='store_true',
                                  help='Also generate a table of contents')
+    parser_run_kppe.add_argument('--abbreviations_dir', default=STANDARD_ABBREV_PATH, 
+                                 help='Set the full path to the abbreviations directory. Defaults to "%(default)s"')
+    parser_run_kppe.add_argument('--ref_tags_file', default=None, 
+                                 help='Set the full path to a file of reference tags. If not set, no reference tags are used')
     parser_run_kppe.set_defaults(func=run_kppe)
 
     parser_list_templates = subparsers.add_parser('templates', help='Print a list of templates from the templates dir')
@@ -393,8 +379,6 @@ if __name__ == '__main__':
     for p in [parser_list_templates, parser_run_kppe]:
         p.add_argument('--templates_dir', default=STANDARD_TEMPLATE_PATH, 
                         help='Set the full path to the templates directory. Defaults to "%(default)s"')
-        p.add_argument('--abbreviations_dir', default=STANDARD_ABBREV_PATH, 
-                        help='Set the full path to the abbreviations directory. Defaults to "%(default)s"')
         p.add_argument('--quiet', '-q', action='store_false', dest="verbose",
                        help='Whether to suppress information and status during operation')
         p.add_argument('--version', action='version',
