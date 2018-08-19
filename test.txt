@@ -7,8 +7,8 @@
 # Heading Two
 <<ref:ref1>>
 
-Foo Bar Baz
+Foo Bar Baz<<action:Kim>>
 
-<<n:RHCP>>
+<<n:RHCP>><<action:Bob>>
 
 <<sig:sample_sig>>

@@ -27,7 +27,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-from collections import defaultdict, OrderedDict, namedtuple
+from collections import Counter, OrderedDict, namedtuple
 from glob import glob
 import inspect
 import json
@@ -99,8 +99,8 @@ class TagReplace(object):
     def __init__(self, lines, abbrevs={}, ref_tags={}, images_dir=None):
         self.lines = lines
         # track occurences of reference tags
-        self.ref_count = defaultdict(int)
-        self.action_count = defaultdict(int)
+        self.ref_count = Counter()
+        self.action_count = Counter()
         self.abbrevs = abbrevs
         self.ref_tags = ref_tags
         # Set the path of image files to be the path of kppe.py, if not otherwise set
@@ -357,7 +357,7 @@ if __name__ == '__main__':
             f = open('output.txt', 'w')
             f.write(text)
             f.close()
-        ret, retcode = build_pdf(text, template, os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
+        (ret, retcode) = build_pdf(text, template, os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
         if args.verbose:
             print 'Pandoc output:'
             print
