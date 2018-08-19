@@ -27,7 +27,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
-from collections import defaultdict, OrderedDict
+from collections import defaultdict, OrderedDict, namedtuple
 from ConfigParser import SafeConfigParser
 from glob import glob
 import inspect
@@ -39,15 +39,28 @@ from subprocess import Popen, PIPE, STDOUT
 import sys
 from version import VERSION
 
+ERROR = namedtuple('ERROR', ('code', 'name'))
+code = 0
+NO_ERROR = ERROR(code,  "NO_ERROR")
+code += 1
+BAD_REF_TAGS_FILE_ERROR = ERROR(code,  "BAD_REF_TAGS_FILE")
+code += 1
+BAD_TEMPLATE_DIR_ERROR = ERROR(code, "BAD_TEMPLATE_DIR")
+code += 1
+BAD_TEMPLATE_FILE_ERROR = ERROR(code, "BAD_TEMPLATE_FILE")
+code += 1
+PANDOC_ERROR = ERROR(code, "PANDOC_ERROR")
+code += 1
+UNKNOWN_ERROR = ERROR(code, "UNKNOWN_ERROR")
 # Exceptions
 class KppeExpection(Exception):
     pass
 class BadRefTagsFileException(KppeExpection):
-    pass
+    error = BAD_REF_TAGS_FILE_ERROR
 class BadTemplateDirException(KppeExpection):
-    pass
+    error = BAD_TEMPLATE_DIR_ERROR
 class BadTemplateFileException(KppeExpection):
-    pass
+    error = BAD_TEMPLATE_FILE_ERROR
 
 # determine the local path
 frame = inspect.currentframe()
@@ -272,47 +285,38 @@ def get_template(template_name, templates_dir):
         raise BadTemplateFileException
     return templates[template_name]
 
-def exit(code = None, verbose=False):
-    ''' Exit, using optional supplied ERROR_CODES value if given.
+def exit(error = None, verbose=False):
+    ''' Exit, using optional supplied ERROR value if given.
     If 'verbose', print additional info
     '''
-    if (code != None) and verbose:
-        print 'Exit code: %d. Code name: %s' % (code.value, str(code.name))
-    if code == None:
-        sys.exit()
-    else:
-        sys.exit(code.value)
+    if (error is not None):
+        if verbose:
+            print 'Exit code: %d. Code name: %s' % (error.code, str(error.name))
+        sys.exit(error.code)
+    sys.exit()
 
 if __name__ == '__main__':
     
-    from enum import Enum
     import argparse
-
-    # define error codes
-    ERROR_CODES = Enum("ErrorCodes", [("NO_ERROR",0), ("BAD_REF_TAGS_FILE",3), 
-                                      ("BAD_TEMPLATE_DIR",4), ("BAD_TEMPLATE_FILE",5),
-                                      ("PANDOC_ERROR",7), ("UNKNOWN_ERROR",8)])
 
     def list_templates(args):
         try:
             templates = get_template_dict(args.templates_dir)
-        except BadTemplateDirException:
-            exit(ERROR_CODES.BAD_TEMPLATE_SELECTION, args.verbose)
+        except BadTemplateDirException as e: 
+            exit(e.error, args.verbose)
         print 'Available Templates:'
         print '\n'.join(['   %s' % t for t in templates.keys()])
-        exit(ERROR_CODES.NO_ERROR, args.verbose)
+        exit(NO_ERROR, args.verbose)
 
     def run_kppe(args):
         ''' Build a PDF, if supplied options are valid. Exit with an error code otherwise
         '''
         try:
             template = get_template(args.template, args.templates_dir)
-        except BadTemplateDirException:
-            exit(ERROR_CODES.BAD_TEMPLATE_DIR, args.verbose)
-        except BadTemplateFileException:
-            exit(ERROR_CODES.BAD_TEMPLATE_FILE, args.verbose)
+        except (BadTemplateDirException, BadTemplateFileException) as e:
+            exit(e.error, args.verbose)
         except Exception as e:
-            exit(ERROR_CODES.UNKNOWN_ERROR, args.verbose)            
+            exit(NO_ERROR, args.verbose)
 
         # build a list of abbreviations, sending an empty dict if there aren't any
         # Raise an error if an invalid file is supplied
@@ -326,10 +330,10 @@ if __name__ == '__main__':
         if args.ref_tags_file:
             try:
                 ref_tags = get_ref_tags(args.ref_tags_file)
-            except BadRefTagsFileException:
-                exit(ERROR_CODES.BAD_REF_TAGS_FILE, args.verbose)
+            except BadRefTagsFileException as e:
+                exit(e.error, args.verbose)
             except Exception as e:
-                exit(ERROR_CODES.UNKNOWN_ERROR, args.verbose)
+                exit(NO_ERROR, args.verbose)
         else:
             ref_tags = {}
 
@@ -348,7 +352,7 @@ if __name__ == '__main__':
             print ret
         fh.close()
         # if pandoc did not report a 0 returncode, return a PANDOC_ERROR
-        exit(ERROR_CODES.PANDOC_ERROR if retcode else ERROR_CODES.NO_ERROR, args.verbose)
+        exit(PANDOC_ERROR if retcode else NO_ERROR, args.verbose)
 
     parser = argparse.ArgumentParser(description='Build a PDF with markdown2pdf')
     subparsers = parser.add_subparsers()
