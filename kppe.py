@@ -49,6 +49,8 @@ BAD_TEMPLATE_DIR_ERROR = ERROR(code, "BAD_TEMPLATE_DIR")
 code += 1
 BAD_TEMPLATE_FILE_ERROR = ERROR(code, "BAD_TEMPLATE_FILE")
 code += 1
+BAD_IMAGE_DIR_ERROR = ERROR(code, "BAD_IMAGE_DIR")
+code += 1
 PANDOC_ERROR = ERROR(code, "PANDOC_ERROR")
 code += 1
 UNKNOWN_ERROR = ERROR(code, "UNKNOWN_ERROR")
@@ -61,6 +63,8 @@ class BadTemplateDirException(KppeExpection):
     error = BAD_TEMPLATE_DIR_ERROR
 class BadTemplateFileException(KppeExpection):
     error = BAD_TEMPLATE_FILE_ERROR
+class BadImageDirException(KppeExpection):
+    error = BAD_IMAGE_DIR_ERROR
 
 # determine the local path
 frame = inspect.currentframe()
@@ -91,18 +95,19 @@ class TagReplace(object):
     '''
 
     sig_size = 3
-    sig_path = None
 
-    def __init__(self, lines, abbrevs={}, ref_tags={}):
+    def __init__(self, lines, abbrevs={}, ref_tags={}, images_dir=None):
         self.lines = lines
         # track occurences of reference tags
         self.ref_count = defaultdict(int)
         self.action_count = defaultdict(int)
-        # Set the path to signature files to be the path of kppe.py, if not otherwise set
-        if not self.__class__.sig_path:
-            self.__class__.sig_path = LOCAL_PATH
         self.abbrevs = abbrevs
         self.ref_tags = ref_tags
+        # Set the path of image files to be the path of kppe.py, if not otherwise set
+        if images_dir:
+            self.images_dir = os.path.abspath(images_dir)
+        else:
+            self.images_dir = LOCAL_PATH
   
     def process(self):
         ''' Loop over each line, replacing all tags as they are encountered
@@ -155,7 +160,7 @@ class TagReplace(object):
                 # create file name
                 if items[1:]:
                     fh = items[1]
-                    f = os.path.join(self.sig_path, '%s.png' % fh).replace('\\', '/')
+                    f = os.path.join(self.images_dir, '%s.png' % fh).replace('\\', '/')
                 # calculate size
                 try:
                     size = float(items[2])
@@ -337,8 +342,15 @@ if __name__ == '__main__':
         else:
             ref_tags = {}
 
+        try:
+            if args.images_dir and not os.path.exists(args.images_dir):
+                raise BadImageDirException
+        except BadImageDirException as e:
+            exit(e.error, args.verbose)
+        
         fh = open(args.file, 'r')
-        tag = TagReplace([l.strip('\n') for l in fh.readlines()], abbrevs=abbrevs, ref_tags=ref_tags)
+        tag = TagReplace([l.strip('\n') for l in fh.readlines()], abbrevs=abbrevs, 
+                         ref_tags=ref_tags, images_dir=args.images_dir)
         tag.process()
         text = tag.get_text()
         if args.write_source_file:
@@ -366,6 +378,8 @@ if __name__ == '__main__':
                                  help='Also generate a table of contents')
     parser_run_kppe.add_argument('--abbreviations-dir', default=STANDARD_ABBREV_PATH, 
                                  help='Set the full path to the abbreviations directory. Defaults to "%(default)s"')
+    parser_run_kppe.add_argument('--images-dir', default=None, 
+                                 help="Set the full path to the images directory. If not specified this executable's directory is used")
     parser_run_kppe.add_argument('--ref-tags-dir', default=None, 
                                  help='Set the full path to the reference tags directory. If not set, no reference tags are used')
     parser_run_kppe.set_defaults(func=run_kppe)

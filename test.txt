@@ -10,3 +10,5 @@
 Foo Bar Baz
 
 <<n:RHCP>>
+
+<<sig:sample_sig>>
