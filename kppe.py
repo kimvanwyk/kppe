@@ -40,6 +40,7 @@ import sys
 from version import VERSION
 
 ERROR = namedtuple('ERROR', ('code', 'name'))
+REF_TAG = namedtuple('REF_TAG', ('title', 'prefix'))
 code = 0
 NO_ERROR = ERROR(code,  "NO_ERROR")
 code += 1
@@ -202,7 +203,7 @@ class TagReplace(object):
             keys.sort()
 
             for k in keys:
-                t, prefix = self.ref_tags[k]
+                (t, prefix) = self.ref_tags[k]
                 if prefix:
                     prefix = prefix.strip() + ' '
                 else:
@@ -253,20 +254,22 @@ def build_pdf(text, template, name, toc=False):
     ret = p.communicate(input=text)[0]
     return (ret, p.returncode)
 
-def get_ref_tags(filename):
-    ''' Parse the supplied file of reference tags
+def get_ref_tags(ref_tags_dir):
+    ''' Parse the supplied directory of reference tag file
     '''
-    if not os.path.exists(filename):
+    out = {}
+    try:
+        if os.path.exists(ref_tags_dir):
+            p = os.path.abspath(ref_tags_dir)
+            for f in [f for f in os.listdir(p) if not os.path.isdir(os.path.join(p,f))]:
+                with open(os.path.join(p,f), 'r') as fh:
+                    d = json.load(fh)
+                    for (r,v) in d.iteritems():
+                        out[r] = REF_TAG(v['title'], v.get('prefix'))
+        return out
+    except Exception as e:
+        print e
         raise BadRefTagsFileException
-
-    ref_tags = SafeConfigParser(defaults={'prefix':None})
-    ref_tags.read(filename)
-    d = {}
-    for s in ref_tags.sections():
-        if 'title' not in ref_tags.options(s):
-            raise BadRefTagsFileException
-        d[s] = (ref_tags.get(s,'title'),ref_tags.get(s, 'prefix'))
-    return d
 
 def get_template_dict(template_dir):
     l = []
@@ -274,7 +277,7 @@ def get_template_dict(template_dir):
         if not os.path.exists(d):
             raise BadTemplateDirException
         p = os.path.abspath(d)
-        for f in [f for f in os.listdir(d) if not os.path.isdir(os.path.join(p,f))]:
+        for f in [f for f in os.listdir(p) if not os.path.isdir(os.path.join(p,f))]:
             l.append((os.path.splitext(f)[0], os.path.join(p, f)))
     l.sort()
     return OrderedDict(l)
@@ -320,20 +323,18 @@ if __name__ == '__main__':
 
         # build a list of abbreviations, sending an empty dict if there aren't any
         # Raise an error if an invalid file is supplied
+        abbrevs = {}
         if os.path.exists(args.abbreviations_dir):
-            abbrevs = {}
             for f in glob(os.path.join(args.abbreviations_dir, '*.json')):
                 with open(f, 'r') as fh:
                     abbrevs.update(json.load(fh))
 
         # produce a ref tags file, if specified
-        if args.ref_tags_file:
+        if args.ref_tags_dir:
             try:
-                ref_tags = get_ref_tags(args.ref_tags_file)
+                ref_tags = get_ref_tags(args.ref_tags_dir)
             except BadRefTagsFileException as e:
                 exit(e.error, args.verbose)
-            except Exception as e:
-                exit(NO_ERROR, args.verbose)
         else:
             ref_tags = {}
 
@@ -366,8 +367,8 @@ if __name__ == '__main__':
                                  help='Also generate a table of contents')
     parser_run_kppe.add_argument('--abbreviations-dir', default=STANDARD_ABBREV_PATH, 
                                  help='Set the full path to the abbreviations directory. Defaults to "%(default)s"')
-    parser_run_kppe.add_argument('--ref-tags-file', default=None, 
-                                 help='Set the full path to a file of reference tags. If not set, no reference tags are used')
+    parser_run_kppe.add_argument('--ref-tags-dir', default=None, 
+                                 help='Set the full path to the reference tags directory. If not set, no reference tags are used')
     parser_run_kppe.set_defaults(func=run_kppe)
 
     parser_list_templates = subparsers.add_parser('templates', help='Print a list of templates from the templates dir')

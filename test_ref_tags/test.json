@@ -1,0 +1,9 @@
+{
+  "ref1": {
+    "title": "Reference One"
+  },
+  "ref2": {
+    "title": "Reference Two",
+    "prefix": "This is a prefix.."
+  }
+}

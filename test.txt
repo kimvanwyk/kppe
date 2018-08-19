@@ -1,0 +1,12 @@
+<<heading:TEST:TEST>>
+
+# Heading One
+<<ref:ref1>>
+<<ref:ref2>>
+
+# Heading Two
+<<ref:ref1>>
+
+Foo Bar Baz
+
+<<n:RHCP>>
