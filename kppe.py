@@ -278,12 +278,11 @@ def get_ref_tags(ref_tags_dir):
 def get_template_dict(template_dir):
     l = []
     for d in (DEFAULT_TEMPLATE_PATH, template_dir):
-        if not os.path.exists(d):
-            raise BadTemplateDirException
-        p = os.path.abspath(d)
-        for f in [f for f in os.listdir(p) if not os.path.isdir(os.path.join(p,f))]:
-            l.append((os.path.splitext(f)[0], os.path.join(p, f)))
-    l.sort()
+        if os.path.exists(d):
+            p = os.path.abspath(d)
+            for f in [f for f in os.listdir(p) if not os.path.isdir(os.path.join(p,f))]:
+                l.append((os.path.splitext(f)[0], os.path.join(p, f)))
+            l.sort()
     return OrderedDict(l)
 
 def get_template(template_name, templates_dir):
