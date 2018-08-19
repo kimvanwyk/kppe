@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
 from collections import defaultdict, OrderedDict, namedtuple
-from ConfigParser import SafeConfigParser
 from glob import glob
 import inspect
 import json
