@@ -48,8 +48,6 @@ class BadTemplateDirException(KppeExpection):
     pass
 class BadTemplateFileException(KppeExpection):
     pass
-class BadAbbreviationDirException(KppeExpection):
-    pass
 
 # determine the local path
 frame = inspect.currentframe()
@@ -292,7 +290,7 @@ if __name__ == '__main__':
 
     # define error codes
     ERROR_CODES = Enum("ErrorCodes", [("NO_ERROR",0), ("BAD_REF_TAGS_FILE",3), 
-                                      ("BAD_TEMPLATE_DIR",4), ("BAD_TEMPLATE_FILE",5), ("BAD_ABBREVIATION_DIR",6),
+                                      ("BAD_TEMPLATE_DIR",4), ("BAD_TEMPLATE_FILE",5),
                                       ("PANDOC_ERROR",7), ("UNKNOWN_ERROR",8)])
 
     def list_templates(args):
@@ -318,12 +316,11 @@ if __name__ == '__main__':
 
         # build a list of abbreviations, sending an empty dict if there aren't any
         # Raise an error if an invalid file is supplied
-        if not os.path.exists(args.abbreviations_dir):
-            exit(ERROR_CODES.BAD_ABBREVIATION_DIR, args.verbose)
-        abbrevs = {}
-        for f in glob(os.path.join(args.abbreviations_dir, '*.json')):
-            with open(f, 'r') as fh:
-                abbrevs.update(json.load(fh))
+        if os.path.exists(args.abbreviations_dir):
+            abbrevs = {}
+            for f in glob(os.path.join(args.abbreviations_dir, '*.json')):
+                with open(f, 'r') as fh:
+                    abbrevs.update(json.load(fh))
 
         # produce a ref tags file, if specified
         if args.ref_tags_file:
