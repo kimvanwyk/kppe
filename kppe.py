@@ -34,7 +34,7 @@ import json
 import os
 import os.path
 import re
-from subprocess import Popen, PIPE, STDOUT
+import subprocess as sp
 import sys
 from version import VERSION
 
@@ -116,7 +116,7 @@ class TagReplace(object):
             ''' Process the tag match object and return a suitable replacement
             '''
             items = match.groups()[0].split(':')
-            if (items[0] == 'ref') and (items[1] in self.ref_tags.keys()):
+            if (items[0] == 'ref') and (items[1] in list(self.ref_tags.keys())):
                 # found a match, replace it and increase the count
                 self.ref_count[items[1]] += 1
                 return r"\label{%s%d}" % (items[1], self.ref_count[items[1]])
@@ -203,7 +203,7 @@ class TagReplace(object):
         if any(self.ref_count.values()):
             self.out.extend(['', '#District Projects', '', ''])
 
-            keys = self.ref_tags.keys()
+            keys = list(self.ref_tags.keys())
             keys.sort()
 
             for k in keys:
@@ -226,7 +226,7 @@ class TagReplace(object):
         if any(self.action_count.values()):
             self.out.extend(['', '#Actions', '', ''])
 
-            keys = self.action_count.keys()
+            keys = list(self.action_count.keys())
             keys.sort()
 
             for k in keys:
@@ -236,7 +236,7 @@ class TagReplace(object):
 
         return '\n'.join(self.out)
 
-def build_pdf(text, template, name, toc=False):
+def build_pdf(in_text, template, name, toc=False):
     ''' Build the provided *text* into a PDF via markdown2pdf, using the supplied full path to the *template*
     *name* is the output filename to use
     if *toc* evals as True, a table of contents is generated
@@ -254,8 +254,8 @@ def build_pdf(text, template, name, toc=False):
     args = ['pandoc', '-s', '-V', 'fontsize:12', '-V', 'path:%s' % path, template_arg, '-o', '%s.%s' % (name, ext)]
     if toc:
         args.append('--toc')
-    p = Popen(args, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
-    ret = p.communicate(input=text)[0]
+    p = sp.Popen(args, stdout=sp.PIPE, stdin=sp.PIPE, stderr=sp.STDOUT)
+    ret = p.communicate(input=in_text.encode('utf-8'))[0]
     return (ret, p.returncode)
 
 def get_ref_tags(ref_tags_dir):
@@ -268,11 +268,11 @@ def get_ref_tags(ref_tags_dir):
             for f in [f for f in os.listdir(p) if not os.path.isdir(os.path.join(p,f))]:
                 with open(os.path.join(p,f), 'r') as fh:
                     d = json.load(fh)
-                    for (r,v) in d.iteritems():
+                    for (r,v) in d.items():
                         out[r] = REF_TAG(v['title'], v.get('prefix'))
         return out
     except Exception as e:
-        print e
+        print(e)
         raise BadRefTagsFileException
 
 def get_template_dict(template_dir):
@@ -298,7 +298,7 @@ def exit(error = None, verbose=False):
     '''
     if (error is not None):
         if verbose:
-            print 'Exit code: %d. Code name: %s' % (error.code, str(error.name))
+            print('Exit code: %d. Code name: %s' % (error.code, str(error.name)))
         sys.exit(error.code)
     sys.exit()
 
@@ -311,8 +311,8 @@ if __name__ == '__main__':
             templates = get_template_dict(args.templates_dir)
         except BadTemplateDirException as e: 
             exit(e.error, args.verbose)
-        print 'Available Templates:'
-        print '\n'.join(['   %s' % t for t in templates.keys()])
+        print('Available Templates:')
+        print('\n'.join(['   %s' % t for t in list(templates.keys())]))
         exit(NO_ERROR, args.verbose)
 
     def run_kppe(args):
@@ -359,9 +359,9 @@ if __name__ == '__main__':
             f.close()
         (ret, retcode) = build_pdf(text, template, os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
         if args.verbose:
-            print 'Pandoc output:'
-            print
-            print ret
+            print('Pandoc output:')
+            print()
+            print(ret)
         fh.close()
         # if pandoc did not report a 0 returncode, return a PANDOC_ERROR
         exit(PANDOC_ERROR if retcode else NO_ERROR, args.verbose)

@@ -7,7 +7,7 @@
 # Heading Two
 <<ref:ref1>>
 
-Foo Bar Baz<<action:Kim>>
+Foo Bar Bazé<<action:Kim>>
 
 <<n:RHCP>><<action:Bob>>
 
