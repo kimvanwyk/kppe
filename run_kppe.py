@@ -3,31 +3,42 @@ dir of the input file and various input dirs
 '''
 
 import os, os.path
+import subprocess as sp
+
+import docker
 
 CONTAINER_NAME = 'kppe'
+IMAGE_NAME = 'kimvanwyk/kppe:latest'
 
 VOLUME_BASE = '/home/kimv/src/kppe/kppe_private'
 
-VOLUMES = {os.path.join(VOLUME_BASE, 'abbreviations'): '/abbreviations',
-           os.path.join(VOLUME_BASE, 'images'): '/images',
-           os.path.join(VOLUME_BASE, 'ref_tags'): '/ref_tags',
-           os.path.join(VOLUME_BASE, 'templates'): '/templates',
-}
-VOLUME_PATH = ' -v '.join(f'{k}:{v}' for (k,v) in VOLUMES.items())
-
-import os.path
-import subprocess as sp
+VOLUMES = (('abbreviations','abbreviations'),('images','images'),('ref_tags','ref_tags'),('templates','templates'))
+client = docker.from_env()
 
 def call_kppe(in_path, args=[]):
     (workdir, in_name) = os.path.split(in_path)
     workdir = os.path.abspath(workdir)
+    print(workdir, in_name)
+    volumes = {}
+    for (h,c) in VOLUMES:
+        volumes[os.path.join(VOLUME_BASE, h)] = {'bind':f'/{c}', 'mode':'ro'}
+    volumes[workdir] = {'bind':'/io', 'mode':'rw'}
+    arg_string = ''
+    if args:
+        joined = " ".join(args)
+        arg_string = f' "{joined}"'
     try:
-        arg_string = ' '.join(args)
-        out = sp.check_output(f'docker run --rm --name {CONTAINER_NAME} -v {VOLUME_PATH} -v {workdir}:/io kimvanwyk/kppe:latest {in_name} {"".join(args)}', 
-                              shell=True)
-        print(out)
-    except sp.CalledProcessError as e:
-        print(f'Error: {e.output}')
+        client.containers.run(IMAGE_NAME, command=f'{in_name}{arg_string}', name=CONTAINER_NAME,
+                              volumes=volumes, auto_remove=False, stdin_open=True, stream=True, tty=True)
+    finally:
+        cont = None
+        try:
+            cont = client.containers.get(CONTAINER_NAME)
+        except Exception:
+            cont = None
+        if cont:
+            cont.stop()
+            cont.remove(v=False)
 
 if __name__ == '__main__':
     import argparse
@@ -35,4 +46,4 @@ if __name__ == '__main__':
     parser.add_argument('in_path', help='Path to the file to process')
     args = parser.parse_args()
 
-call_kppe(args.in_path)
+    call_kppe(args.in_path)
