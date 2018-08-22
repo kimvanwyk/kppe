@@ -19,7 +19,6 @@ client = docker.from_env()
 def call_kppe(in_path, args=[]):
     (workdir, in_name) = os.path.split(in_path)
     workdir = os.path.abspath(workdir)
-    print(workdir, in_name)
     volumes = {}
     for (h,c) in VOLUMES:
         volumes[os.path.join(VOLUME_BASE, h)] = {'bind':f'/{c}', 'mode':'ro'}
