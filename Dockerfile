@@ -1,12 +1,15 @@
-FROM kimvanwyk/pandoc:latest
+FROM kimvanwyk/pandoc:1.0.0
 
 LABEL name=kimvanwyk/kppe
 MAINTAINER kimvanwyk
 
+USER root
 RUN apt-get update && apt-get -y install \
    python3 \
 && apt-get autoremove \
 && rm -rf /var/lib/apt/lists/*
+
+USER appuser
 
 ADD src/ /app
 
