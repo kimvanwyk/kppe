@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 ''' Execute kppe in the kimvanwyk/kppe container, voluming in the 
 dir of the input file and various input dirs
 '''
