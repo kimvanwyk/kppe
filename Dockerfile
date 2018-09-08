@@ -23,4 +23,5 @@ WORKDIR /io
 
 ENV LANG C.UTF-8
 
-ENTRYPOINT ["/usr/bin/python3", "/app/kppe.py", "build", "--abbreviations-dir", "/abbreviations", "--templates-dir", "/templates", "--images-dir", "/images", "--ref-tags-dir", "/ref_tags", "no_frills_latex"]
+ENTRYPOINT ["/usr/bin/python3", "/app/kppe.py", "build", "--abbreviations-dir", "/abbreviations", "--templates-dir", "/templates", "--images-dir", "/images", "--ref-tags-dir", "/ref_tags"]
+CMD ["no_frills_latex"]
