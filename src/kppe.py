@@ -236,7 +236,7 @@ class TagReplace(object):
 
         return '\n'.join(self.out)
 
-def build_pdf(in_text, template, name, toc=False):
+def build_document(in_text, template, name, toc=False):
     ''' Build the provided *text* into a PDF via markdown2pdf, using the supplied full path to the *template*
     *name* is the output filename to use
     if *toc* evals as True, a table of contents is generated
@@ -358,7 +358,7 @@ if __name__ == '__main__':
             f = open('output.txt', 'w')
             f.write(text)
             f.close()
-        (ret, retcode) = build_pdf(text, template, os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
+        (ret, retcode) = build_document(text, template, os.path.splitext(os.path.split(args.file)[1])[0], toc=args.toc)
         if args.verbose:
             print('Pandoc output:')
             print()
