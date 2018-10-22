@@ -9,10 +9,11 @@ RUN apt-get update && apt-get -y install \
 && apt-get autoremove \
 && rm -rf /var/lib/apt/lists/*
 
+COPY src/ /app
+VOLUME /templates
+RUN chmod ugo+rwx /app
+
 USER appuser
-
-ADD src/ /app
-
 VOLUME /abbreviations
 VOLUME /io
 VOLUME /templates

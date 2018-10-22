@@ -96,8 +96,8 @@ class TagReplace(object):
 
     sig_size = 3
 
-    def __init__(self, lines, abbrevs={}, ref_tags={}, images_dir=None):
-        self.lines = lines
+    def __init__(self, text, abbrevs={}, ref_tags={}, images_dir=None):
+        self.lines = text.split('\n')
         # track occurences of reference tags
         self.ref_count = Counter()
         self.action_count = Counter()
@@ -301,8 +301,13 @@ def exit(error = None, verbose=False):
         sys.exit(error.code)
     sys.exit()
 
+def markup(text, abbrevs={}, ref_tags={}, images_dir=None):
+    tag = TagReplace(text, abbrevs=abbrevs, 
+                     ref_tags=ref_tags, images_dir=images_dir)
+    tag.process()
+    return tag.get_text()
+
 if __name__ == '__main__':
-    
     import argparse
 
     def list_templates(args):
@@ -348,10 +353,7 @@ if __name__ == '__main__':
             exit(e.error, args.verbose)
         
         fh = open(args.file, 'r')
-        tag = TagReplace([l.strip('\n') for l in fh.readlines()], abbrevs=abbrevs, 
-                         ref_tags=ref_tags, images_dir=args.images_dir)
-        tag.process()
-        text = tag.get_text()
+        text = markup(fh.read(), abbrevs=abbrevs, ref_tags=ref_tags, images_dir=args.images_dir)
         if args.write_source_file:
             f = open('output.txt', 'w')
             f.write(text)
