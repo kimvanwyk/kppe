@@ -17,10 +17,12 @@ VOLUME_BASE = '/home/kimv/src/kppe/kppe_private'
 VOLUMES = [(os.path.join(VOLUME_BASE, v), v) for v in ('abbreviations', 'images', 'ref_tags')]
 client = docker.from_env()
 
-def call_kppe(template, in_path, args=[], templates_dir='templates'):
+def call_kppe(template, in_path, args=[], templates_dir=None):
     (workdir, in_name) = os.path.split(in_path)
     workdir = os.path.abspath(workdir)
     volumes = {}
+    if templates_dir is None:
+        templates_dir = os.path.join(VOLUME_BASE, 'templates')
     VOLUMES.append((templates_dir, 'templates'))
     for (h,c) in VOLUMES:
         volumes[h] = {'bind':f'/{c}', 'mode':'ro'}
@@ -47,10 +49,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run a containerised kppe instance')
     parser.add_argument('template', help='Template to use')
     parser.add_argument('in_path', help='Path to the file to process')
-    parser.add_argument('--templates_dir', default='templates', help='Template directory to use')
+    parser.add_argument('--templates_dir', default=None, help='Template directory to use')
     args = parser.parse_args()
 
-    if not os.path.exists(args.templates_dir):
+    if args.templates_dir and not os.path.exists(args.templates_dir):
         print(f'Supplied templates dir "{args.templates_dir}" is not a valid path')
         sys.exit(1)
 
