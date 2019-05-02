@@ -15,7 +15,7 @@
 \usepackage{multirow}
 \usepackage{hhline}
 \usepackage{tabularx}
-\usepackage{ltablex}
+% \usepackage{ltablex}
 \usepackage{longtable}
 \usepackage{booktabs}
 
