@@ -10,7 +10,7 @@ import sys
 import docker
 
 CONTAINER_NAME = 'kppe'
-IMAGE_NAME = 'kimvanwyk/kppe:latest'
+IMAGE_NAME = 'registry.gitlab.com/kimvanwyk/kppe'
 
 VOLUME_BASE = '/home/kimv/src/kppe/kppe_private'
 
