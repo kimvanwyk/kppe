@@ -13,6 +13,13 @@
 \usepackage[utf8x]{inputenc}
 
 \usepackage{multirow}
+\usepackage{multicol}
+\newcommand{\hideFromPandoc}[1]{#1}
+\hideFromPandoc{
+  \let\Begin\begin
+  \let\End\end
+}
+
 \usepackage{hhline}
 \usepackage{tabularx}
 % \usepackage{ltablex}
