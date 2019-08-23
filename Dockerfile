@@ -10,7 +10,6 @@ RUN apt-get update && apt-get -y install \
 && rm -rf /var/lib/apt/lists/*
 
 COPY src/ /app
-VOLUME /templates
 RUN chmod ugo+rwx /app
 
 USER appuser
