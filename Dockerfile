@@ -5,7 +5,7 @@ MAINTAINER kimvanwyk
 
 USER root
 RUN apt-get update && apt-get -y install \
-   python3 \
+   python3.8 \
 && apt-get autoremove \
 && rm -rf /var/lib/apt/lists/*
 
