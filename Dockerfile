@@ -12,13 +12,13 @@ RUN apt-get update && apt-get -y install \
 COPY src/ /app
 RUN chmod ugo+rwx /app
 
-USER appuser
-VOLUME /abbreviations
+RUN mkdir /abbreviations; chown appuser:appuser /abbreviations
 VOLUME /io
-VOLUME /templates
-VOLUME /images
-VOLUME /ref_tags
+RUN mkdir /templates; chown appuser:appuser /templates
+RUN mkdir /images; chown appuser:appuser /images
+RUN mkdir /ref_tags; chown appuser:appuser /ref_tags
 
+USER appuser
 WORKDIR /io
 
 ENV LANG C.UTF-8
