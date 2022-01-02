@@ -220,7 +220,7 @@ class TagReplace(object):
     def get_text(self):
         # Add reference section, if there are refs
         if any(self.ref_count.values()):
-            self.out.extend(["", "#District Projects", "", ""])
+            self.out.extend(["", "# District Projects", "", ""])
 
             keys = list(self.ref_tags.keys())
             keys.sort()
